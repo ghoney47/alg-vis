@@ -20,6 +20,7 @@ class Graph:
         :param id_num: (int) Identifier that corresponds to the class constant
         :param weighted: (boolean) Marks if the graphs will have weighted edges or not
         """
+        self.id = id_num
         if id_num == 0 or id_num == 2:
             self.graph = nx.DiGraph()
         else:
@@ -38,7 +39,7 @@ class Graph:
         for i in range (1, nodeCount + 1):
             self.graph.add_node(i)
 
-    def _create_edges(self, edge_count, edge_upper, edge_lower, spans):
+    def _create_undir_edges(self, edge_count, edge_lower, edge_upper, spans):
         """
         Docstring for _edges
         helper to generate edges for assign_edges
@@ -48,49 +49,53 @@ class Graph:
         :param edge_upper: (int) upper bound for edge weight
         :param edge_lower: (int) lower bound for edge weight
         """
+        num_nodes = self.graph.number_of_nodes()
+
         if not spans:
             count = edge_count
             while (count > 0):
                     
                 ##selects random start node, will allow self loops
-                u = rand.randint(1, self.graph.number_of_nodes)
-                v = rand.randint(1, self.graph.number_of_nodes)
+                u = rand.randint(1, num_nodes)
+                v = rand.randint(1, num_nodes)
 
                 ##randomly adds weight within range
                 if self.weighted:
-                    weight = rand.randint(edge_upper, edge_lower)
-                    self.graph.add_weighted_edges_from(u, v, weight=weight)
+                    weight = rand.randint(edge_lower, edge_upper)
+                    self.graph.add_weighted_edges_from([(u, v, weight)])
                 else:
                     self.graph.add_edges_from(u, v)
                 count -= 1
         else: 
             ##creating a graph that spans 
-            count = edge_count
-            while (count > 0):
-                ##iterates through all nodes 
-                for node in list(self.graph.nodes):
-                ##TODO: check if edge exists, if not, draws new connection
+            
+            ##iterates through all nodes 
+            for node in list(self.graph.nodes):
 
-                    ##checks if connection exists
-                    if len(self.graph.adj[node]) == 0:
-                        
-                        ##selecting random connection 
-                        rand_node = rand.randint(0, self.graph.number_of_nodes)
+                ##checks if nodes has 1 or less connections
+                if len(self.graph.adj[node]) < 2:
+                    
+                    ##selecting random 'to' node
+                    rand_node = rand.randint(1, num_nodes+1)
 
-                        ##ensuring node selected has no more than 1 connection, and is not the current node
-                        while (rand_node != node and len(self.graph.adj[rand_node]) < 2):
-                            rand_node = rand.randint(0, self.graph.number_of_nodes)
+                    ##ensuring node selected has no more than 1 connection, is not the current node, and the edge does not already exist 
+                    while (rand_node == node and len(self.graph.adj[rand_node]) > 2 and (not (node in self.graph.adj[rand_node]))):
+                        rand_node = rand.randint(1, num_nodes+1)
 
-                ##randomly adds weight within range
-                if self.weighted:
-                    weight = rand.randint(edge_upper, edge_lower)
-                    self.graph.add_weighted_edges_from(node, rand_node, weight=weight)
-                else:
-                    self.graph.add_edges_from(node, rand_node)
-                count -= 1
-                            
-
-                        
+                    ##randomly adds weight within range if weighted
+                    if self.weighted:
+                        weight = rand.randint(edge_lower, edge_upper)
+                        self.graph.add_weighted_edges_from([(node, rand_node, weight)])
+                    else:
+                        self.graph.add_edge(node, rand_node)
+           
+            
+            if edge_count - (num_nodes - 1) > 0:
+                ##if excess nodes, recursively calls the method to create further random connections
+                self._create_edges(edge_count - (num_nodes - 1), edge_lower, edge_upper, False)
+            
+                
+   
 
 
                                                     
@@ -98,7 +103,7 @@ class Graph:
 
 
 
-    def assign_edges(self, edge_count, edge_upper, edge_lower, spans):
+    def assign_edges(self, edge_count, edge_lower, edge_upper, spans):
         """
         Docstring for createEdges
         creates edges for the graph
@@ -110,26 +115,15 @@ class Graph:
         :param spans: (boolean) if graph will be guarenteed complete
         """
 
-        ## if edges specified is greater than nodes and called for, complete graph is drawn 
-        if edge_count == self.graph.number_of_nodes - 1 and spans:
-            if self.weighted:
-                self._create_edges(edge_count, edge_upper, edge_lower, spans)
-                ##TODO: create weighted complete graph
-
-
-                ## draws complete graph
-            else: 
-                self.graph = nx.complete_graph(self.graph.number_of_nodes)
-
-            ##if complete graph specified with more edges than nodes
-        elif spans and self.graph.number_of_nodes - 1 < edge_count:
-            count = edge_count
-
-    
-
-        else:
-            ##randomly draws edges, only graphs at least nodes - 1 edges can be complete
-            print("else case")
+        if self.id == Graph.GRAPH: ##undirected graph
+            print("Graph")
+            self._create_undir_edges(edge_count, edge_lower, edge_upper, spans)
+        elif self.id == Graph.DIGRAPH:
+            ##TODO: implement digraph stuff
+            print("Digraph")
+        else : ## DAG
+            ##TODO: implement DAG stuff
+            print("DAG")
 
 
             
@@ -144,22 +138,15 @@ class Graph:
         """
         return nx.draw_random(self.graph)
 
-    def get_edge_type(self):
-        """
-        Docstring for get_ident
-        returns weighted or not
-        
-        :param self: Graph object
-        """
-        return self.weighted
 
 
 ## for testing
 g = Graph(1, True) ##creates a weighted graph
 
-g.create_nodes(20)
+g.create_nodes(15)
+g.assign_edges(50, 0, 100, True)
 
-nx.draw(g.graph) ##must call the graph of g
+nx.draw(g.graph, with_labels=True, pos=nx.shell_layout(g.graph)) ##must call the graph of g
 
 
 plt.show()

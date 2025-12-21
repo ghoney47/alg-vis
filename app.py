@@ -8,7 +8,7 @@ st.title("Graph Visualizer")
 
 st.markdown('### Create Graph')
 graph_type = st.selectbox("Graph Type", ("-","Directed", "Undirected", "DAG"))
-edge_type = st.radio("Edge Type", ["Weighted", "Unweighted"])
+edge_type = st.radio("Edge Type", ["Weighted", "Unweighted"]) ##TODO: if unweighted, set edge upper/lower to 0
 spans = st.radio("Spanning", ["Yes", "No"])
 node_count = st.slider("Number of Nodes")
 edge_count = st.slider("Number of Edges")
