@@ -92,7 +92,7 @@ class Graph:
             
             if edge_count - (num_nodes - 1) > 0:
                 ##if excess nodes, recursively calls the method to create further random connections
-                self._create_edges(edge_count - (num_nodes - 1), edge_lower, edge_upper, False)
+                self._create_undir_edges(edge_count - (num_nodes - 1), edge_lower, edge_upper, False)
             
                 
    
@@ -143,8 +143,8 @@ class Graph:
 ## for testing
 g = Graph(1, True) ##creates a weighted graph
 
-g.create_nodes(15)
-g.assign_edges(50, 0, 100, True)
+g.create_nodes(5)
+g.assign_edges(2, 0, 100, True) ##TODO: broken, less edges doesn't work
 
 nx.draw(g.graph, with_labels=True, pos=nx.shell_layout(g.graph)) ##must call the graph of g
 
