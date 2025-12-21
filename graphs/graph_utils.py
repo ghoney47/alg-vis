@@ -1,5 +1,6 @@
 import networkx as nx
 import random as rand
+import matplotlib.pyplot as plt ##TODO: remove after development
 
 ##should take a state, and return a matlabplot 
 class Graph:
@@ -20,9 +21,9 @@ class Graph:
         :param weighted: (boolean) Marks if the graphs will have weighted edges or not
         """
         if id_num == 0 or id_num == 2:
-            self.graph = nx.DiGraph
+            self.graph = nx.DiGraph()
         else:
-            self.graph = nx.Graph
+            self.graph = nx.Graph()
         self.weighted = weighted ##true is weighted, false is unweighted
 
     def create_nodes(self, nodeCount):
@@ -34,7 +35,7 @@ class Graph:
         :param nodeCount: (int) amount of nodes the user has specified 
         """
 
-        for i in range (0, nodeCount):
+        for i in range (1, nodeCount + 1):
             self.graph.add_node(i)
 
     def _create_edges(self, edge_count, edge_upper, edge_lower, spans):
@@ -128,6 +129,7 @@ class Graph:
 
         else:
             ##randomly draws edges, only graphs at least nodes - 1 edges can be complete
+            print("else case")
 
 
             
@@ -156,7 +158,11 @@ class Graph:
 g = Graph(1, True) ##creates a weighted graph
 
 g.create_nodes(20)
-g.create_edges(20, 
+
+nx.draw(g.graph) ##must call the graph of g
+
+
+plt.show()
 
 
             

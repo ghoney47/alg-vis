@@ -35,3 +35,5 @@ with st.sidebar.container(horizontal=False, vertical_alignment="distribute"):
 ##Output creation
 ##TODO: pass inputs to graph utils
 
+##TODO: create output page after input (where the algs are run)
+
