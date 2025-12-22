@@ -39,7 +39,7 @@ class Graph:
         for i in range (1, nodeCount + 1):
             self.graph.add_node(i)
 
-    def _create_undir_edges(self, edge_count, edge_lower, edge_upper, spans):
+    def _create_edges(self, edge_count, edge_lower, edge_upper, spans):
         """
         Docstring for _edges
         helper to generate edges for assign_edges
@@ -51,6 +51,7 @@ class Graph:
         """
         num_nodes = self.graph.number_of_nodes()
 
+        ##not enough edges to span, or span is not specified
         if not spans or edge_count < num_nodes-1:
             count = edge_count
             while (count > 0):
@@ -58,13 +59,14 @@ class Graph:
                 ##selects random start node, will allow self loops
                 u = rand.randint(1, num_nodes)
                 v = rand.randint(1, num_nodes)
+                if self.id == Graph.GRAPH or self.id == Graph.DIGRAPH: ##undirected edges 
 
-                ##randomly adds weight within range
-                if self.weighted:
-                    weight = rand.randint(edge_lower, edge_upper)
-                    self.graph.add_weighted_edges_from([(u, v, weight)])
-                else:
-                    self.graph.add_edges_from(u, v)
+                    ##randomly adds weight within range if weighted
+                    if self.weighted:
+                        weight = rand.randint(edge_lower, edge_upper)
+                        self.graph.add_weighted_edges_from([(u, v, weight)])
+                    else:
+                        self.graph.add_edges_from(u, v)
                 count -= 1
         else: 
             ##creating a graph that spans 
@@ -92,7 +94,7 @@ class Graph:
             
             if edge_count - (num_nodes - 1) > 0:
                 ##if excess nodes, recursively calls the method to create further random connections
-                self._create_undir_edges(edge_count - (num_nodes - 1), edge_lower, edge_upper, False)
+                self._create_edges(edge_count - (num_nodes - 1), edge_lower, edge_upper, False)
             
                 
    
@@ -115,15 +117,9 @@ class Graph:
         :param spans: (boolean) if graph will be guarenteed complete
         """
 
-        if self.id == Graph.GRAPH: ##undirected graph
-            print("Graph")
-            self._create_undir_edges(edge_count, edge_lower, edge_upper, spans)
-        elif self.id == Graph.DIGRAPH:
-            ##TODO: implement digraph stuff
-            print("Digraph")
-        else : ## DAG
-            ##TODO: implement DAG stuff
-            print("DAG")
+        if self.id == Graph.GRAPH or self.id == Graph.DIGRAPH: 
+            self._create_edges(edge_count, edge_lower, edge_upper, spans)
+        else: ##DAG
 
 
             
@@ -141,10 +137,11 @@ class Graph:
 
 
 ## for testing
-g = Graph(1, True) ##creates a weighted graph
+## 1 -> graph, 0 -> digraph, 2 -> dag
+g = Graph(0, True) ##creates a graph
 
 g.create_nodes(5)
-g.assign_edges(2, 0, 100, True) 
+g.assign_edges(4, 0, 100, True) 
 
 nx.draw(g.graph, with_labels=True, pos=nx.shell_layout(g.graph)) ##must call the graph of g
 
