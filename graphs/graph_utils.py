@@ -97,7 +97,13 @@ class Graph:
                 self._create_edges(edge_count - (num_nodes - 1), edge_lower, edge_upper, False)
             
                 
-   
+    def _DAG_create(self, edge_count, edge_lower, edge_upper, spans):
+        if spans:##spans for this case is true -> one source, false -> many sources
+            ##DAG should have one source
+            print("dag one source")
+        else:
+            ## DAG can have multiple sources
+            print("dag many source")
 
 
                                                     
