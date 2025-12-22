@@ -51,7 +51,7 @@ class Graph:
         """
         num_nodes = self.graph.number_of_nodes()
 
-        if not spans:
+        if not spans or edge_count < num_nodes-1:
             count = edge_count
             while (count > 0):
                     
@@ -144,7 +144,7 @@ class Graph:
 g = Graph(1, True) ##creates a weighted graph
 
 g.create_nodes(5)
-g.assign_edges(2, 0, 100, True) ##TODO: broken, less edges doesn't work
+g.assign_edges(2, 0, 100, True) 
 
 nx.draw(g.graph, with_labels=True, pos=nx.shell_layout(g.graph)) ##must call the graph of g
 
