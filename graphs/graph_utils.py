@@ -133,7 +133,7 @@ class Graph:
         function draws the stored graph in the object as a matlabplot in a random graph layout
         :param self: Graph Object
         """
-        return nx.draw_random(self.graph)
+        nx.draw(g.graph, with_labels=True, pos=nx.shell_layout(g.graph))
 
 
 
