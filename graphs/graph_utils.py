@@ -120,6 +120,7 @@ class Graph:
         if self.id == Graph.GRAPH or self.id == Graph.DIGRAPH: 
             self._create_edges(edge_count, edge_lower, edge_upper, spans)
         else: ##DAG
+            print("DAG")
 
 
             
