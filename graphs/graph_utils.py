@@ -48,6 +48,7 @@ class Graph:
         :param edge_count: (int) number of edges
         :param edge_upper: (int) upper bound for edge weight
         :param edge_lower: (int) lower bound for edge weight
+        :param spans: (boolean) if graph is guarenteed to span all nodes
         """
         num_nodes = self.graph.number_of_nodes()
 
@@ -95,15 +96,103 @@ class Graph:
             if edge_count - (num_nodes - 1) > 0:
                 ##if excess nodes, recursively calls the method to create further random connections
                 self._create_edges(edge_count - (num_nodes - 1), edge_lower, edge_upper, False)
+    
+
             
                 
-    def _DAG_create(self, edge_count, edge_lower, edge_upper, spans):
-        if spans:##spans for this case is true -> one source, false -> many sources
-            ##DAG should have one source
-            print("dag one source")
-        else:
-            ## DAG can have multiple sources
-            print("dag many source")
+    def _create_DAG(self, edge_count, edge_lower, edge_upper, spans, sources):
+        """
+        Docstring for create_DAG
+        
+        :param self: graph object
+        :param edge_count: (int) number of edges
+        :param edge_lower: (int) weight lower bound
+        :param edge_upper: (int) weight upper bound
+        :param spans: (boolean) if graph is guarenteed to span all nodes
+        :param sources: specifying the number of sources in the DAG
+        """
+
+        ##set source nodes
+        source_count = sources
+        source_nodes = []
+
+        for node in list(self.graph.nodes):
+
+            ##adds nodes as sources 
+            if source_count > 0:
+                source_nodes.append(node)
+                source_count -= 1
+            else:
+                break
+        
+        ##creates list representation and adds source nodes
+        DAG_levels = [source_nodes]
+
+        
+        ##predetermines node placement within levels
+        non_source_count = self.graph.number_of_nodes() - len(source_nodes)
+        node_id = len(source_nodes) + 1
+
+
+        
+        level = 1
+
+        while (non_source_count > 0):
+            appending_nodes = []
+
+            for i in range(0, rand.randint(1, non_source_count)):
+                appending_nodes.append(node_id)
+                node_id += 1
+
+            DAG_levels.append(appending_nodes)
+
+            ##updates nodes to be linked count
+            non_source_count -= len(appending_nodes)
+
+            ##moving to next level
+            level += 1
+       
+                
+
+
+        ##linking nodes
+        ##TODO: node placement works (as tested 12/24)
+        ##no guarenteed span
+        if not spans:
+
+            edge_remain = edge_count
+
+            
+            for i in range(0, DAG_levels):
+                from_nodes = DAG_levels[i]
+
+                if i + 1 < len(DAG_levels):
+                    to_nodes = DAG_levels[i+1]
+
+                ##edges to be created within the level
+                level_edges = rand.randint(0, edge_remain)
+
+                ##updating remaining edge count
+                edge_remain -= level_edges
+
+                ##creating edges
+                for j in range(0, level_edges):
+
+                    ##selecting from random node
+                    rand_from_node = rand.randint(from_nodes[0], from_nodes[-1])
+
+                    ##selecting to random node
+                    rand_to_node = rand.randint(to_nodes[0], to_nodes[-1])
+
+                    self.graph.add_edge(rand_from_node, rand_to_node)
+                
+
+
+        
+        ##guarenteed span
+        else: 
+            print("else")
+
 
 
                                                     
@@ -111,7 +200,7 @@ class Graph:
 
 
 
-    def assign_edges(self, edge_count, edge_lower, edge_upper, spans):
+    def assign_edges(self, edge_count, edge_lower, edge_upper, spans, sources):
         """
         Docstring for createEdges
         creates edges for the graph
@@ -120,13 +209,15 @@ class Graph:
         :param edge_count: (int) number of edges
         :param edge_upper: (int) upper bound for edge weight
         :param edge_lower: (int) lower bound for edge weight
-        :param spans: (boolean) if graph will be guarenteed complete
+        :param spans: (boolean) if graph is guarenteed to span all nodes
         """
 
-        if self.id == Graph.GRAPH or self.id == Graph.DIGRAPH: 
+        ##determines if graph is DAG for creation
+        if self.id != 2:
             self._create_edges(edge_count, edge_lower, edge_upper, spans)
-        else: ##DAG
-            print("DAG")
+        else:
+            self._create_DAG(edge_count, edge_lower, edge_upper, spans, sources)
+
 
 
             
@@ -145,10 +236,12 @@ class Graph:
 
 ## for testing
 ## 1 -> graph, 0 -> digraph, 2 -> dag
-g = Graph(0, True) ##creates a graph
+g = Graph(2, True) ##creates a graph
 
 g.create_nodes(5)
-g.assign_edges(4, 0, 100, True) 
+
+
+g.assign_edges(10, 0, 100, False, 2) 
 
 nx.draw(g.graph, with_labels=True, pos=nx.shell_layout(g.graph)) ##must call the graph of g
 

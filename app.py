@@ -28,7 +28,7 @@ if graph_type == "Directed" or graph_type == "Undirected":
 
     ##TODO: create graphs within this scope
 
-##DAG selection
+##DAG creation
 else:
     edge_type = st.radio("Edge Type", ["Weighted", "Unweighted"]) ##TODO: if unweighted, set edge upper/lower to 0
     node_count = st.slider("Number of Nodes")
@@ -36,7 +36,7 @@ else:
 
     ##only allows source selection with valid nodes
     if node_count > 0:
-        sources = st.slider("Sources", min_value=0, max_value=node_count)
+        sources = st.slider("Sources", min_value=1, max_value=node_count)
 
     ##sliders for weights
     if edge_type == "Weighted":
