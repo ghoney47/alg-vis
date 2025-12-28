@@ -1,0 +1,3 @@
+DIGRAPH = 0
+GRAPH = 1
+DAG = 2

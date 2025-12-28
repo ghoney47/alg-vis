@@ -2,7 +2,7 @@
 Application that visualizes graphs and their algorithms, showing when certain algorithms will fail/succeed, and explain why they have that behvaior (add why you care)
 
 ## Node Color Coding
-Orange: Nodes with 2+ incoming edges (stands out!)
+Orange: Nodes with 2+ incoming edges 
 Navy Blue: Nodes with exactly 1 incoming edge
 White: Source nodes (0 incoming edges)
 

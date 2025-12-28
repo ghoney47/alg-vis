@@ -1,5 +1,6 @@
 import networkx as nx
 import random as rand
+from graphs import constants as c
 import matplotlib.pyplot as plt ##TODO: remove after development
 
 ##should take a state, and return a matlabplot 
@@ -63,6 +64,10 @@ class Graph:
                 ##selects random start node, will allow self loops
                 u = rand.randint(1, num_nodes)
                 v = rand.randint(1, num_nodes)
+
+                print("From node: " + str(u))
+                print("To node: " + str(v))
+
                 if self.id == Graph.GRAPH or self.id == Graph.DIGRAPH: ##undirected edges 
 
                     ##randomly adds weight within range if weighted
@@ -74,9 +79,9 @@ class Graph:
                 count -= 1
         else: 
             ##creating a graph that spans 
-            
+            all_nodes = list(self.graph.nodes)
             ##iterates through all nodes 
-            for node in list(self.graph.nodes):
+            for node in all_nodes:
 
                 ##checks if nodes has 1 or less connections
                 if len(self.graph.adj[node]) < 2:
@@ -84,9 +89,12 @@ class Graph:
                     ##selecting random 'to' node
                     rand_node = rand.randint(1, num_nodes)
 
-                    ##ensuring node selected has no more than 1 connection, is not the current node, and the edge does not already exist 
-                    while (rand_node == node and len(self.graph.adj[rand_node]) > 2 and (not (node in self.graph.adj[rand_node]))):
+                    ##ensuring node selected has no more than 1 connection, is not the current node, or the edge does not already exist 
+                    while (rand_node == node or len(self.graph.adj[rand_node]) > 2 or ((node in self.graph.adj[rand_node])) ):
                         rand_node = rand.randint(1, num_nodes)
+
+                    print("From node: " + str(node))
+                    print("To node: " + str(rand_node))
 
                     ##randomly adds weight within range if weighted
                     if self.weighted:
@@ -104,6 +112,7 @@ class Graph:
             
                 
     def _create_DAG(self, edge_count, edge_lower, edge_upper, spans, sources):
+
         """
         Docstring for create_DAG
         
@@ -298,19 +307,6 @@ class Graph:
 
 
         print("Inputted: " + str(edge_count))
-                    
-
-
-
-        
-
-
-
-
-                                                    
-
-
-
 
     def assign_edges(self, edge_count, edge_lower, edge_upper, spans, sources):
         """
@@ -340,15 +336,34 @@ class Graph:
         Docstring for display
         function draws the stored graph in the object as a matlabplot in a random graph layout
         :param self: Graph Object
+        returns matplotlib figure for display
         """
-        if self.id != 2:
-            pos = nx.shell_layout(self.graph)  
+        fig = plt.figure(figsize=(10, 8))
+        
+        if self.id == c.GRAPH or self.id == c.DIGRAPH:
+            pos = nx.shell_layout(self.graph)
+            
+            # Determine node colors based on incoming edges (Sagehen colors)
+            node_colors = []
+            for node in self.graph.nodes():
+                in_degree = self.graph.in_degree(node) if self.id == c.DIGRAPH else len(list(self.graph.neighbors(node)))
+                if in_degree > 1:
+                    node_colors.append('#F7971D')  # Pitzer Orange for multiple incoming edges
+                elif in_degree == 1:
+                    node_colors.append('#005499')  # Pomona Navy for single incoming edge
+                else:
+                    node_colors.append('#FEFEFE')  # White for source nodes (no incoming)
+            
+            # Draw graph with colors
+            nx.draw(self.graph, pos, with_labels=True, node_size=800, font_size=10, 
+                   node_color=node_colors, edgecolors='#231F20', linewidths=2)
+            
             # edge weight labels
             edge_labels = nx.get_edge_attributes(self.graph, "weight")
-            nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=edge_labels, font_size=14, font_weight='bold', bbox=dict(facecolor='yellow', alpha=0.8, edgecolor='none'))
-            nx.draw(self.graph, with_labels=True, pos=pos) 
-            plt.show()
-        else: 
+            nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=edge_labels, 
+                                        font_size=14, font_weight='bold', 
+                                        bbox=dict(facecolor='yellow', alpha=0.8, edgecolor='none'))
+        else:  # DAG
             pos = {}
             x_spacing = 2  # Horizontal space between levels
             y_spacing = 1.5  # Vertical space between nodes
@@ -372,21 +387,23 @@ class Graph:
                 else:
                     node_colors.append('#FEFEFE')  # White for source nodes (no incoming)
             
-            nx.draw(self.graph, pos, with_labels=True, node_size=800, font_size=10, node_color=node_colors, edgecolors='#231F20', linewidths=2)
+            nx.draw(self.graph, pos, with_labels=True, node_size=800, font_size=10, 
+                   node_color=node_colors, edgecolors='#231F20', linewidths=2)
             edge_labels = nx.get_edge_attributes(self.graph, 'weight')
             nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=edge_labels, font_size=10)
-            plt.show()
+        
+        return fig
 
 
 
 ## for testing
 ## 1 -> graph, 0 -> digraph, 2 -> dag
-g = Graph(2, True) ##creates a graph
+g = Graph(1, False) ##creates a graph
 
-g.create_nodes(9)
+g.create_nodes(12)
 
 
-g.assign_edges(12, 0, 100, True, 5) 
+g.assign_edges(11, 0, 100, True, 5) 
 
 g.display()
 
