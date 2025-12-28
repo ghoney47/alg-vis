@@ -30,7 +30,7 @@ class Graph:
         self.weighted = weighted ##true is weighted, false is unweighted
         
 
-    def create_nodes(self, nodeCount):
+    def create_nodes(self, node_count):
         """
         Docstring for createNodes
         creates nodes in graph
@@ -39,7 +39,7 @@ class Graph:
         :param nodeCount: (int) amount of nodes the user has specified 
         """
 
-        for i in range (1, nodeCount + 1):
+        for i in range (1, node_count + 1):
             self.graph.add_node(i)
 
     def _create_edges(self, edge_count, edge_lower, edge_upper, spans):
@@ -70,7 +70,7 @@ class Graph:
                         weight = rand.randint(edge_lower, edge_upper)
                         self.graph.add_weighted_edges_from([(u, v, weight)])
                     else:
-                        self.graph.add_edges_from(u, v)
+                        self.graph.add_edge(u, v)
                 count -= 1
         else: 
             ##creating a graph that spans 
@@ -82,11 +82,11 @@ class Graph:
                 if len(self.graph.adj[node]) < 2:
                     
                     ##selecting random 'to' node
-                    rand_node = rand.randint(1, num_nodes+1)
+                    rand_node = rand.randint(1, num_nodes)
 
                     ##ensuring node selected has no more than 1 connection, is not the current node, and the edge does not already exist 
                     while (rand_node == node and len(self.graph.adj[rand_node]) > 2 and (not (node in self.graph.adj[rand_node]))):
-                        rand_node = rand.randint(1, num_nodes+1)
+                        rand_node = rand.randint(1, num_nodes)
 
                     ##randomly adds weight within range if weighted
                     if self.weighted:
@@ -118,6 +118,7 @@ class Graph:
         ##set source nodes
         source_count = sources
         source_nodes = []
+        num_nodes = self.graph.number_of_nodes()
 
         for node in list(self.graph.nodes):
 
@@ -154,32 +155,36 @@ class Graph:
             ##moving to next level
             level += 1
        
+        #For testing
+        ##DAG_levels = [[1, 2, 3, 4, 5], [6, 7, 8, 9]]
+
 
         print("DAG Levels: " + str(DAG_levels))
         self.DAG_levels = DAG_levels
+        
                 
 
+        ##TODO: remove after testing
+        edge_final_create = 0
+        
 
-        ##linking nodes
-        ##TODO: node placement works (as tested 12/24), finish connecting logic
-        ##no guarenteed span
         if not spans:
             print("SPAN FALSE")
             edge_remain = edge_count
 
             while (edge_remain > 0):
+
+                ##iterating through dag levels
                 for i in range(0, len(DAG_levels)):
-                    from_nodes = DAG_levels[i]
 
                     ##if there are more levels
                     if i + 1 < len(DAG_levels):
                         to_nodes = DAG_levels[i+1]
-                
+                        from_nodes = DAG_levels[i]
 
                     else:
                         ##returns the from nodes to previous level
                         from_nodes = DAG_levels[i-1]
-
                         to_nodes = DAG_levels[i]
 
                     ##edges to be created within the level
@@ -193,11 +198,11 @@ class Graph:
 
                         ##selecting from random node
                         rand_from_node = rand.randint(from_nodes[0], from_nodes[-1])
-                        print ("from node" + str(rand_from_node))
+                        print ("from node " + str(rand_from_node))
 
                         ##selecting to random node
                         rand_to_node = rand.randint(to_nodes[0], to_nodes[-1])
-                        print ("to node" + str(rand_to_node))
+                        print ("to node " + str(rand_to_node))
 
                         while (rand_to_node == rand_from_node):
                                 rand_to_node = rand.randint(to_nodes[0], to_nodes[-1])
@@ -211,13 +216,94 @@ class Graph:
                         else:
                             self.graph.add_edge(rand_from_node, rand_to_node)
                             print("edge created\n")
+                        edge_final_create += 1
                     
-
+            print("Randomly created: " + str(edge_final_create))
 
         
         ##guarenteed span
         else: 
             print("SPAN TRUE")
+            
+            edge_remain = edge_count
+
+            ##iterating through DAG levels
+            for i in range(0, len(DAG_levels)-1):
+                from_nodes = DAG_levels[i]
+                to_nodes = DAG_levels[i+1]
+
+                if len(to_nodes) < len(from_nodes):
+
+                    ##tracking current to node
+                    t_node_id = 0
+                    ##iterating through level nodes and links each to a single node following
+                    for f_node in from_nodes:
+
+                        print("from node: " + str(f_node))
+                        print("to node: " + str(to_nodes[t_node_id]))
+
+                        ##randomly adds weight within range if weighted
+                        if self.weighted:
+                            weight = rand.randint(edge_lower, edge_upper)
+                            print("weight: " + str(weight))
+                            self.graph.add_weighted_edges_from([(f_node, to_nodes[t_node_id], weight)])
+                            print("weighted edge created\n")
+                        else:
+                            self.graph.add_edge(f_node, to_nodes[t_node_id])
+                            print("edge created\n")
+                        
+                        edge_final_create += 1
+                        edge_remain -= 1
+
+                        if t_node_id + 1 < len(to_nodes):
+                            t_node_id += 1
+                        else:
+                            t_node_id = 0
+                else:
+                    
+                    ##tracking current from node
+                    f_node_id = 0
+
+                    ##iterating through level nodes and links each to a single node following
+                    for t_node in to_nodes:
+
+                        print("from node: " + str(from_nodes[f_node_id]))
+                        print("to node: " + str(t_node))
+
+                        ##randomly adds weight within range if weighted
+                        if self.weighted:
+                            weight = rand.randint(edge_lower, edge_upper)
+                            print("weight: " + str(weight))
+                            self.graph.add_weighted_edges_from([(from_nodes[f_node_id], t_node, weight)])
+                            print("weighted edge created\n")
+                        else:
+                            self.graph.add_edge(from_nodes[f_node_id], t_node)
+                            print("edge created\n")
+                        
+                        edge_final_create += 1
+                        edge_remain -= 1
+
+                        if f_node_id + 1 < len(from_nodes):
+                            f_node_id += 1
+                        else:
+                            f_node_id = 0
+
+                    
+            print("Hit all nodes: " + str(edge_final_create))
+                    
+
+        ##randomly adds edges if there are excess
+        if edge_remain > 0:
+            self._create_DAG(edge_remain, edge_lower, edge_upper, False, sources)
+
+
+        print("Inputted: " + str(edge_count))
+                    
+
+
+
+        
+
 
 
 
@@ -252,11 +338,44 @@ class Graph:
     def display(self):
         """
         Docstring for display
-        
         function draws the stored graph in the object as a matlabplot in a random graph layout
         :param self: Graph Object
         """
-        nx.draw(g.graph, with_labels=True, pos=nx.shell_layout(g.graph))
+        if self.id != 2:
+            pos = nx.shell_layout(self.graph)  
+            # edge weight labels
+            edge_labels = nx.get_edge_attributes(self.graph, "weight")
+            nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=edge_labels, font_size=14, font_weight='bold', bbox=dict(facecolor='yellow', alpha=0.8, edgecolor='none'))
+            nx.draw(self.graph, with_labels=True, pos=pos) 
+            plt.show()
+        else: 
+            pos = {}
+            x_spacing = 2  # Horizontal space between levels
+            y_spacing = 1.5  # Vertical space between nodes
+            
+            # Sets node placement
+            for level_index, nodes_in_level in enumerate(self.DAG_levels):
+                num_nodes = len(nodes_in_level)
+                for node_index, node in enumerate(nodes_in_level):
+                    x = level_index * x_spacing
+                    y = (node_index - (num_nodes - 1) / 2) * y_spacing
+                    pos[node] = (x, y)
+            
+            # Determine node colors based on incoming edges (Sagehen colors)
+            node_colors = []
+            for node in self.graph.nodes():
+                in_degree = self.graph.in_degree(node)
+                if in_degree > 1:
+                    node_colors.append('#F7971D')  # Pitzer Orange for multiple incoming edges
+                elif in_degree == 1:
+                    node_colors.append('#005499')  # Pomona Navy for single incoming edge
+                else:
+                    node_colors.append('#FEFEFE')  # White for source nodes (no incoming)
+            
+            nx.draw(self.graph, pos, with_labels=True, node_size=800, font_size=10, node_color=node_colors, edgecolors='#231F20', linewidths=2)
+            edge_labels = nx.get_edge_attributes(self.graph, 'weight')
+            nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=edge_labels, font_size=10)
+            plt.show()
 
 
 
@@ -264,37 +383,16 @@ class Graph:
 ## 1 -> graph, 0 -> digraph, 2 -> dag
 g = Graph(2, True) ##creates a graph
 
-g.create_nodes(11)
+g.create_nodes(9)
 
 
-g.assign_edges(10, 0, 100, False, 5) 
+g.assign_edges(12, 0, 100, True, 5) 
+
+g.display()
 
 
-if g.id != 2:
-    pos = nx.shell_layout(g.graph)  
-    # edge weight labels
-    edge_labels = nx.get_edge_attributes(g.graph, "weight")
-    nx.draw_networkx_edge_labels(g.graph, pos, edge_labels=edge_labels,font_size=14,font_weight='bold', bbox=dict(facecolor='yellow', alpha=0.8, edgecolor='none'))
-    nx.draw(g.graph, with_labels=True, pos=pos) ##must call the graph of g
-    plt.show()
 
-else: 
-    ##this completely works, use in final!!!!!
-    pos = {}
-    x_spacing = 2  # Horizontal space between levels
-    y_spacing = 1.5  # Vertical space between nodes
-
-    for level_index, nodes_in_level in enumerate(g.DAG_levels):
-        num_nodes = len(nodes_in_level)
-        for node_index, node in enumerate(nodes_in_level):
-            x = level_index * x_spacing
-            y = (node_index - (num_nodes - 1) / 2) * y_spacing
-            pos[node] = (x, y)
-
-    nx.draw(g.graph, pos, with_labels=True, node_size=800, font_size=10)
-    edge_labels = nx.get_edge_attributes(g.graph, 'weight')
-    nx.draw_networkx_edge_labels(g.graph, pos, edge_labels=edge_labels, font_size=10)
-    plt.show()
+plt.show()
 
 
 

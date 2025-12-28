@@ -1,5 +1,6 @@
 import streamlit as st
 import matplotlib.pyplot as plt
+from graphs import graph_utils as gu
 
 ## TODO: for dev, make sure to use streamlit run app.py in the terminal to access the local host
 ## TODO: create color theme, get very familiar with streamlit 
@@ -33,6 +34,10 @@ else:
     edge_type = st.radio("Edge Type", ["Weighted", "Unweighted"]) ##TODO: if unweighted, set edge upper/lower to 0
     node_count = st.slider("Number of Nodes")
     edge_count = st.slider("Number of Edges")
+    spans = "No"
+    ##will never 
+    if edge_count + 1 >= node_count and node_count != 0 and edge_count != 0:
+        spans = st.radio("Reaches All Nodes", ["Yes", "No"])
 
     ##only allows source selection with valid nodes
     if node_count > 0:
@@ -53,12 +58,19 @@ with st.sidebar.container(horizontal=False, vertical_alignment="distribute"):
     if st.button("Generate Custom", type="primary", shortcut="G"):
         ##TODO: generate graph 
         print("user selected user graph")
+        
+
+
     if st.button("Generate Random", type="primary", shortcut="Shift+G"):
         ##TODO: generate graph
         print("user selected random graph")
+
+
+
     if st.button("Generate **FAILURE** Graph", type="primary", shortcut="F"):
         ##TODO: generate graph
         print("user selected failure graph")
+        ##TODO: make failure graphs
 
 ##Output creation
 ##TODO: pass inputs to graph utils
