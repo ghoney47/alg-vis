@@ -21,6 +21,7 @@ input_edge_lower = 0
 input_edge_upper = 0
 input_spans = False
 input_sources = 0
+displayFig = False
 
 
 ##non-dag options
@@ -108,6 +109,7 @@ with st.sidebar.container(horizontal=False, vertical_alignment="distribute"):
         G.create_nodes(input_node_count)
         G.assign_edges(input_edge_count, input_edge_lower, input_edge_upper, input_spans, input_sources)
         fig = G.display()
+        displayFig = True
       
 
 
@@ -122,6 +124,7 @@ with st.sidebar.container(horizontal=False, vertical_alignment="distribute"):
         G.create_nodes(rand_nodes)
         G.assign_edges(random.randint(1, 100), rand_lower, rand_upper, random.choice([True, False]), random.randint(1, rand_nodes))
         fig = G.display()
+        displayFig = True
 
 
 
@@ -130,12 +133,12 @@ with st.sidebar.container(horizontal=False, vertical_alignment="distribute"):
         print("user selected failure graph")
         ##TODO: make failure graphs
 
-st.pyplot(fig, clear_figure=False)  # Add clear_figure parameter
+if displayFig:
+    st.pyplot(fig, clear_figure=False) 
+    st.markdown("## Node Colorings:")
+    st.markdown("- Orange: Nodes with 2+ incoming edges \n - Navy Blue: Nodes with exactly 1 incoming edge \n - White: Source nodes (0 incoming edges)")
 
-st.markdown("## Node Colorings:")
-st.markdown("- Orange: Nodes with 2+ incoming edges \n - Navy Blue: Nodes with exactly 1 incoming edge \n - White: Source nodes (0 incoming edges)")
-##Output creation
-##TODO: pass inputs to graph utils
 
 ##TODO: create output page after input (where the algs are run)
+
 
