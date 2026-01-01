@@ -331,44 +331,43 @@ class Graph:
             
     
 
-    def display(self):
+    def display(self, node_colors=None):
         """
-        Docstring for display
-        function draws the stored graph in the object as a matlabplot in a random graph layout
+        Displays graph with optional custom node colors
         :param self: Graph Object
-        returns matplotlib figure for display
+        :param node_colors: Optional list of colors for nodes (in node order)
+        :returns: matplotlib figure for display
         """
         fig = plt.figure(figsize=(10, 8))
         
         if self.id == c.GRAPH or self.id == c.DIGRAPH:
             pos = nx.shell_layout(self.graph)
             
-            # Determine node colors based on incoming edges (Sagehen colors)
-            node_colors = []
-            for node in self.graph.nodes():
-                in_degree = self.graph.in_degree(node) if self.id == c.DIGRAPH else len(list(self.graph.neighbors(node)))
-                if in_degree > 1:
-                    node_colors.append('#F7971D')  # Pitzer Orange for multiple incoming edges
-                elif in_degree == 1:
-                    node_colors.append('#005499')  # Pomona Navy for single incoming edge
-                else:
-                    node_colors.append('#FEFEFE')  # White for source nodes (no incoming)
+            # If no custom colors provided, calculate default colors
+            if node_colors is None:
+                node_colors = []
+                for node in self.graph.nodes():
+                    in_degree = self.graph.in_degree(node) if self.id == c.DIGRAPH else len(list(self.graph.neighbors(node)))
+                    if in_degree > 1:
+                        node_colors.append('#F7971D')
+                    elif in_degree == 1:
+                        node_colors.append('#005499')
+                    else:
+                        node_colors.append('#FEFEFE')
             
-            # Draw graph with colors
             nx.draw(self.graph, pos, with_labels=True, node_size=800, font_size=10, 
-                   node_color=node_colors, edgecolors='#231F20', linewidths=2)
+                node_color=node_colors, edgecolors='#231F20', linewidths=2)
             
-            # edge weight labels
             edge_labels = nx.get_edge_attributes(self.graph, "weight")
             nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=edge_labels, 
                                         font_size=14, font_weight='bold', 
                                         bbox=dict(facecolor='yellow', alpha=0.8, edgecolor='none'))
+        
         else:  # DAG
             pos = {}
-            x_spacing = 2  # Horizontal space between levels
-            y_spacing = 1.5  # Vertical space between nodes
+            x_spacing = 2
+            y_spacing = 1.5
             
-            # Sets node placement
             for level_index, nodes_in_level in enumerate(self.DAG_levels):
                 num_nodes = len(nodes_in_level)
                 for node_index, node in enumerate(nodes_in_level):
@@ -376,23 +375,25 @@ class Graph:
                     y = (node_index - (num_nodes - 1) / 2) * y_spacing
                     pos[node] = (x, y)
             
-            # Determine node colors based on incoming edges (Sagehen colors)
-            node_colors = []
-            for node in self.graph.nodes():
-                in_degree = self.graph.in_degree(node)
-                if in_degree > 1:
-                    node_colors.append('#F7971D')  # Pitzer Orange for multiple incoming edges
-                elif in_degree == 1:
-                    node_colors.append('#005499')  # Pomona Navy for single incoming edge
-                else:
-                    node_colors.append('#FEFEFE')  # White for source nodes (no incoming)
+            # If no custom colors provided, calculate default colors
+            if node_colors is None:
+                node_colors = []
+                for node in self.graph.nodes():
+                    in_degree = self.graph.in_degree(node)
+                    if in_degree > 1:
+                        node_colors.append('#F7971D')
+                    elif in_degree == 1:
+                        node_colors.append('#005499')
+                    else:
+                        node_colors.append('#FEFEFE')
             
             nx.draw(self.graph, pos, with_labels=True, node_size=800, font_size=10, 
-                   node_color=node_colors, edgecolors='#231F20', linewidths=2)
+                node_color=node_colors, edgecolors='#231F20', linewidths=2)
             edge_labels = nx.get_edge_attributes(self.graph, 'weight')
             nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=edge_labels, font_size=10)
         
-        return fig
+        return fig, node_colors
+
 
 
 
