@@ -258,7 +258,7 @@ class Alg_Engine:
             # Relax edges to non-tree neighbors using Prim's rule
             pq = Alg_Engine._relax_edges_prims(pq, dist_to, edge_to, self.graph, p, marked)
 
-        return mst_edges, order
+        return mst_edges, edge_to, order
 
 
 
@@ -392,7 +392,7 @@ for edge in G1.edges(data=True):
     print(f"  {edge[0]} -- {edge[1]}: weight={edge[2]['weight']}")
 
 engine1 = Alg_Engine(G1)
-mst_edges1, order1 = engine1.prims(source=1)
+mst_edges1, edge_to, order1, = engine1.prims(source=1)
 
 print("\n" + "="*70)
 print("RESULTS:")
@@ -446,7 +446,7 @@ for edge in G2.edges(data=True):
     print(f"  {edge[0]} -- {edge[1]}: weight={edge[2]['weight']}")
 
 engine2 = Alg_Engine(G2)
-mst_edges2, order2 = engine2.prims(source=1)
+mst_edges2, edge2, order2 = engine2.prims(source=1)
 
 print("\n" + "="*70)
 print("RESULTS:")
@@ -483,7 +483,7 @@ for edge in G3.edges(data=True):
     print(f"  {edge[0]} -- {edge[1]}: weight={edge[2]['weight']}")
 
 engine3 = Alg_Engine(G3)
-mst_edges3, order3 = engine3.prims(source=1)
+mst_edges3, edge3, order3 = engine3.prims(source=1)
 
 print("\n" + "="*70)
 print("RESULTS:")

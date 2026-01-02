@@ -84,8 +84,8 @@ if st.session_state.graph is None:
         ##sliders for weights
         if edge_type == "Weighted":
             st.markdown('#### Edge Weight Range')
-            edge_upper = st.slider("Upper", min_value=-100, max_value=100, value=0)
-            edge_lower = st.slider("Lower", min_value=-100, max_value=100, value=0)
+            edge_upper = st.slider("Upper", min_value=0, max_value=100, value=0)
+            edge_lower = st.slider("Lower", min_value=0, max_value=100, value=0)
 
         
         if graph_type == "Undirected":
@@ -126,8 +126,8 @@ if st.session_state.graph is None:
         ##sliders for weights
         if edge_type == "Weighted":
             st.markdown('#### Edge Weight Range')
-            edge_upper = st.slider("Upper", min_value=-100, max_value=100, value=0)
-            edge_lower = st.slider("Lower", min_value=-100, max_value=100, value=0)
+            edge_upper = st.slider("Upper", min_value=0, max_value=100, value=0)
+            edge_lower = st.slider("Lower", min_value=0, max_value=100, value=0)
 
         input_id = c.DAG
     
@@ -225,7 +225,7 @@ if st.session_state.graph is not None:
             elif alg_select == "Dijkstra's":
                 st.session_state.edge_to, st.session_state.dist_to, st.session_state.order = engine.dijkstras(source)
             elif alg_select == "Prim's":
-                st.session_state.mst_edges, st.session_state.order = engine.prims(source)
+                st.session_state.mst_edges, st.session_state.edge_to, st.session_state.order = engine.prims(source)
             
             
 
@@ -272,6 +272,9 @@ if st.session_state.graph is not None:
             ##changes color at necessary node to be red (marks visited) nodes are 1 indexed, colors are 0 indexed
             st.session_state.node_colors[curr_node - 1] =  "#FF0000"
 
+
+            print(str(curr_node - 1))
+            print(st.session_state.edge_to)
             if st.session_state.edge_to[curr_node - 1] != -1:
                 parent = st.session_state.edge_to[curr_node - 1]
                 edge_index = None

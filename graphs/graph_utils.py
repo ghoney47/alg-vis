@@ -365,7 +365,7 @@ class Graph:
                 edge_colors = ['#231F20'] * self.graph.number_of_edges()
             
             nx.draw(self.graph, pos, with_labels=True, node_size=800, font_size=10, 
-                node_color=node_colors, edge_color= edge_colors, linewidths=2)
+                node_color=node_colors, edgecolors= '#231F20', edge_color= edge_colors, linewidths=2)
             
             edge_labels = nx.get_edge_attributes(self.graph, "weight")
             nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=edge_labels, 
