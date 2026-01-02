@@ -1,6 +1,8 @@
 # alg-vis
 Application that visualizes graphs and their algorithms. After taking my Advanced Programming and Data Structures course, I wanted to explore building a small visualization app. In this project I was able to learn Python from my previous Java experience and take my first shot at working with a front end interacting with a Python backend.
 
+Link:
+https://alg-vis.streamlit.app
 ## Features
 - **Graph Generation**: Create custom or random graphs (directed, undirected, or DAGs)
 - **Weighted/Unweighted Edges**: Support for both weighted and unweighted graph types
