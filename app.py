@@ -80,7 +80,7 @@ if st.session_state.graph is None:
 
     ##DAG creation
     else:
-        edge_type = st.radio("Edge Type", ["Weighted", "Unweighted"]) ##TODO: if unweighted, set edge upper/lower to 0
+        edge_type = st.radio("Edge Type", ["Weighted", "Unweighted"])
         node_count = st.slider("Number of Nodes")
         edge_count = st.slider("Number of Edges")
         ##will never 
@@ -151,6 +151,7 @@ with st.sidebar.container(horizontal=False, vertical_alignment="distribute"):
         st.session_state.graph_obj = None
         st.session_state.begin = False
         st.session_state.results = ()
+        st.session_state.node_colors = []
         st.rerun()
     st.markdown("## Node Colorings:")
     st.markdown("- Orange: Nodes with 2+ incoming edges \n - Navy Blue: Nodes with exactly 1 incoming edge \n - White: Source nodes (0 incoming edges)")
@@ -158,7 +159,7 @@ with st.sidebar.container(horizontal=False, vertical_alignment="distribute"):
         
             
 
-##TODO: walkthrough is completely chopped. Completely redo.
+
 
 if st.session_state.graph is not None:
     st.pyplot(st.session_state.fig, clear_figure=False) 
@@ -166,29 +167,47 @@ if st.session_state.graph is not None:
     engine = algs.Alg_Engine(st.session_state.graph)
 
     alg_select = st.selectbox("Algorithm", ["DFS", "BFS", "Dijkstra's", "Prim's"])
-    source = st.slider("Source", min_value= 1, max_value = st.session_state.graph.number_of_nodes())
+    source = st.slider("Source Node", min_value= 1, max_value = st.session_state.graph.number_of_nodes())
 
     if not st.session_state.begin:
         if st.button("Begin"):   
             print("Running " + alg_select)
-            st.session_state.results = engine.depth_first_search(source)
+            st.session_state.counter = 0
+
+            ##selecting algorithm
+            if alg_select == "DFS":
+                st.session_state.results = engine.depth_first_search(source)
+            elif alg_select == "BFS":
+                st.session_state.results = engine.breadth_first_search(source)
+            elif alg_select == "Dijkstra's":
+                st.session_state.results = engine.dijkstra(source)
+            elif alg_select == "Prim's":
+                st.session_state.results = engine.prim(source)
+
+
+
+
             st.session_state.begin = True
             st.rerun()
     elif st.button("Next Step"):
         print("next step")
 
+        ## parsing results into variables
+        if alg_select in ["DFS", "BFS"]:
+            marked, edge_to, dist_to, order = st.session_state.results
+        elif alg_select == "Dijkstra's":
+            edge_to, dist_to, order = st.session_state.results
+        elif alg_select == "Prim's":
+            mst_edges, order = st.session_state.results
 
-        ##TODO: test if this stuff works
-        marked, edge_to, dist_to, order = st.session_state.results
 
         curr_step = st.session_state.counter
         
         ##take first node in order, update that color in the session state, go from there
-
         curr_node = order[curr_step] 
 
         ##changes color at necessary node to be red (marks visited)
-        st.session_state.node_colors.insert(curr_step, "#FF0000")
+        st.session_state.node_colors[curr_node] =  "#FF0000"
 
         ## updates current figure and colors for session state
         st.session_state.fig, st.session_state.node_colors = st.session_state.graph_obj.display(st.session_state.node_colors)
@@ -196,12 +215,12 @@ if st.session_state.graph is not None:
         ##increments step
         st.session_state.counter += 1
 
-        ##display arrays at each step (for walkthrough)-> use the 
+        ##display arrays at each step (for walkthrough)
 
 
-    if st.session_state.counter >= len(order):
-        st.markdown("## Algorithm complete:")
-        ##TODO: add the current state data with st.session_state.results
+        if st.session_state.counter >= len(order):
+            st.markdown("## Algorithm complete:")
+            ##TODO: add the current state data with st.session_state.results
 
 
 

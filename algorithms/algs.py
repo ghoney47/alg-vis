@@ -183,16 +183,85 @@ class Alg_Engine:
             pq = Alg_Engine._relax_edges(pq, dist_to, edge_to, self.graph, p)
 
         return edge_to, dist_to, order
-
-
-
     
-    def prims (self, source):
+    
+    @staticmethod
+    def _relax_edges_prims(pq, dist_to, edge_to, graph, p, marked):
         """
-        Docstring for prims
-        
-        :param self: Alg_Engine object
+        Prim's relaxation:
+        For each neighbor q not yet in the tree, if weight(p,q) < dist_to[q],
+        update q's key and parent to (p, weight).
         """
+        print("Prim's relax on node " + str(p))
+
+        for q in graph.neighbors(p):
+
+            print(f"  Checking neighbor {q} of node {p}")
+
+            # checks for duplicates
+            if marked[q - 1]:
+                continue 
+
+            # Get edge weight (ensure your graph stores 'weight')
+            w = graph.get_edge_data(p, q).get("weight", 1)
+
+            curr_key = dist_to[q - 1]
+            if w < curr_key:
+                dist_to[q - 1] = w
+                edge_to[q - 1] = p
+                pq = Alg_Engine._update_heap((w, q), (curr_key, q), pq)
+
+        return pq
+
+
+    def prims(self, source):
+        """
+        Prim's MST:
+        Returns mst_edges, order for visualization.
+        - mst_edges: list of (u, v, w) edges chosen
+        - order: nodes in the sequence they join the MST
+        """
+        num_nodes = self.graph.number_of_nodes()
+        marked = [False] * num_nodes
+        dist_to = [float('inf')] * num_nodes   # key: cheapest connection to the tree
+        edge_to = [-1] * num_nodes             # parent in MST
+        order = []
+        mst_edges = []
+
+        # Initialize source
+        dist_to[source - 1] = 0
+
+        # Build initial PQ of (key, node)
+        pq = []
+        for node in range(0, num_nodes):
+            pq.append((dist_to[node], node + 1))
+        hq.heapify(pq)
+
+        while len(pq) > 0:
+            curr_key, p = hq.heappop(pq)
+
+            if marked[p - 1]:
+                print(f"  Node {p} already in MST")
+                continue
+
+            # Add node to MST
+            marked[p - 1] = True
+            order.append(p)
+            print(f"  Added node {p} to MST, order so far: {order}")
+
+            # If this node has a parent, record the edge
+            if edge_to[p - 1] != -1:
+                u = edge_to[p - 1]
+                w = self.graph.get_edge_data(u, p).get("weight", 1)
+                mst_edges.append((u, p, w))
+
+            # Relax edges to non-tree neighbors using Prim's rule
+            pq = Alg_Engine._relax_edges_prims(pq, dist_to, edge_to, self.graph, p, marked)
+
+        return mst_edges, order
+
+
+
 
 
 ##testing
@@ -296,3 +365,132 @@ print("\nPrevious nodes will show BFS tree structure")
 print("  Node 1: -1 (source)")
 print("  Nodes 2,3: should come from 1")
 print("  Nodes 4,5: should come from either 2 or 3")
+
+
+# prims tests
+
+# Test Case 1: Simple connected graph
+print("="*70)
+print("TEST CASE 1: Simple Connected Graph")
+print("="*70)
+print("\nGraph structure:")
+print("     1 --4-- 2")
+print("     |  \\    |")
+print("     2   3   5")
+print("     |    \\  |")
+print("     3 --1-- 4")
+
+G1 = nx.Graph()
+G1.add_edge(1, 2, weight=4)
+G1.add_edge(1, 3, weight=2)
+G1.add_edge(1, 4, weight=3)
+G1.add_edge(2, 4, weight=5)
+G1.add_edge(3, 4, weight=1)
+
+print("\nEdges:")
+for edge in G1.edges(data=True):
+    print(f"  {edge[0]} -- {edge[1]}: weight={edge[2]['weight']}")
+
+engine1 = Alg_Engine(G1)
+mst_edges1, order1 = engine1.prims(source=1)
+
+print("\n" + "="*70)
+print("RESULTS:")
+print("="*70)
+print(f"Order nodes joined MST: {order1}")
+print(f"\nMST Edges:")
+total_weight = 0
+for u, v, w in mst_edges1:
+    print(f"  {u} -- {v}: weight={w}")
+    total_weight += w
+print(f"\nTotal MST weight: {total_weight}")
+
+print("\n" + "="*70)
+print("EXPECTED:")
+print("="*70)
+print("Order: [1, 3, 4, 2] or similar (depends on tie-breaking)")
+print("MST Edges should include:")
+print("  1 -- 3: weight=2")
+print("  3 -- 4: weight=1")
+print("  1 -- 2: weight=4")
+print("Total weight should be: 7")
+print("(Cheapest way to connect all 4 nodes)")
+
+
+# Test Case 2: Larger graph with more complex structure
+print("\n\n" + "="*70)
+print("TEST CASE 2: Larger Graph")
+print("="*70)
+print("\nGraph structure:")
+print("     1 --1-- 2")
+print("     |  \\    |")
+print("     4   2   3")
+print("     |    \\  |")
+print("     3 --5-- 4")
+print("          \\  |")
+print("           7 6")
+print("            \\|")
+print("             5")
+
+G2 = nx.Graph()
+G2.add_edge(1, 2, weight=1)
+G2.add_edge(1, 3, weight=4)
+G2.add_edge(1, 4, weight=2)
+G2.add_edge(2, 4, weight=3)
+G2.add_edge(3, 4, weight=5)
+G2.add_edge(3, 5, weight=7)
+G2.add_edge(4, 5, weight=6)
+
+print("\nEdges:")
+for edge in G2.edges(data=True):
+    print(f"  {edge[0]} -- {edge[1]}: weight={edge[2]['weight']}")
+
+engine2 = Alg_Engine(G2)
+mst_edges2, order2 = engine2.prims(source=1)
+
+print("\n" + "="*70)
+print("RESULTS:")
+print("="*70)
+print(f"Order nodes joined MST: {order2}")
+print(f"\nMST Edges:")
+total_weight2 = 0
+for u, v, w in mst_edges2:
+    print(f"  {u} -- {v}: weight={w}")
+    total_weight2 += w
+print(f"\nTotal MST weight: {total_weight2}")
+
+print("\n" + "="*70)
+print("EXPECTED:")
+print("="*70)
+print("MST should use lowest weight edges that connect all nodes")
+print("Total weight should be: 1+2+4+6 = 13")
+print("Edges: 1-2 (1), 1-4 (2), 1-3(4), 4-5 (6)")
+
+
+# Test Case 3: All equal weights (to test tie-breaking consistency)
+print("\n\n" + "="*70)
+print("TEST CASE 3: Equal Weight Edges")
+print("="*70)
+
+G3 = nx.Graph()
+G3.add_edge(1, 2, weight=1)
+G3.add_edge(2, 3, weight=1)
+G3.add_edge(3, 1, weight=1)
+
+print("\nTriangle graph, all edges weight=1")
+print("Edges:")
+for edge in G3.edges(data=True):
+    print(f"  {edge[0]} -- {edge[1]}: weight={edge[2]['weight']}")
+
+engine3 = Alg_Engine(G3)
+mst_edges3, order3 = engine3.prims(source=1)
+
+print("\n" + "="*70)
+print("RESULTS:")
+print("="*70)
+print(f"Order: {order3}")
+print(f"MST Edges: {mst_edges3}")
+print(f"Total weight: {sum(w for u, v, w in mst_edges3)}")
+
+print("\nEXPECTED:")
+print("Should have 2 edges (any 2 of the 3), total weight=2")
