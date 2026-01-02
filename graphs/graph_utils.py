@@ -1,9 +1,7 @@
 import networkx as nx
 import random as rand
 from graphs import constants as c
-import matplotlib.pyplot as plt ##TODO: remove after development
-
-##should take a state, and return a matlabplot 
+import matplotlib.pyplot as plt
 class Graph:
 
     ## class constants for distinctions
@@ -80,34 +78,40 @@ class Graph:
         else: 
             ##creating a graph that spans 
             all_nodes = list(self.graph.nodes)
-            ##iterates through all nodes 
-            for node in all_nodes:
-
-                ##checks if nodes has 1 or less connections
-                if len(self.graph.adj[node]) < 2:
-                    
-                    ##selecting random 'to' node
-                    rand_node = rand.randint(1, num_nodes)
-
-                    ##ensuring node selected has no more than 1 connection, is not the current node, or the edge does not already exist 
-                    while (rand_node == node or len(self.graph.adj[rand_node]) > 2 or ((node in self.graph.adj[rand_node])) ):
-                        rand_node = rand.randint(1, num_nodes)
-
-                    print("From node: " + str(node))
-                    print("To node: " + str(rand_node))
-
-                    ##randomly adds weight within range if weighted
-                    if self.weighted:
-                        weight = rand.randint(edge_lower, edge_upper)
-                        self.graph.add_weighted_edges_from([(node, rand_node, weight)])
-                    else:
-                        self.graph.add_edge(node, rand_node)
-           
             
-            if edge_count - (num_nodes - 1) > 0:
-                ##if excess nodes, recursively calls the method to create further random connections
-                self._create_edges(edge_count - (num_nodes - 1), edge_lower, edge_upper, False)
-    
+            # Build a spanning tree first (ensures connectivity)
+            # Connect nodes sequentially to guarantee spanning
+            connected_nodes = [all_nodes[0]]  # Start with first node
+            unconnected_nodes = all_nodes[1:]  # Rest are unconnected
+            
+            # Create spanning tree (n-1 edges for n nodes)
+            while unconnected_nodes:
+                # Pick a random node from connected set
+                from_node = rand.choice(connected_nodes)
+                # Pick a random node from unconnected set
+                to_node = unconnected_nodes.pop(0)
+                
+                print("Spanning edge - From node: " + str(from_node))
+                print("To node: " + str(to_node))
+                
+                # Add edge
+                if self.weighted:
+                    weight = rand.randint(edge_lower, edge_upper)
+                    self.graph.add_weighted_edges_from([(from_node, to_node, weight)])
+                else:
+                    self.graph.add_edge(from_node, to_node)
+                
+                # Move to_node to connected set
+                connected_nodes.append(to_node)
+            
+            # Calculate remaining edges to add
+            edges_used = num_nodes - 1
+            remaining_edges = edge_count - edges_used
+            
+            if remaining_edges > 0:
+                # Add remaining edges randomly
+                self._create_edges(remaining_edges, edge_lower, edge_upper, False)
+            
 
             
                 
@@ -331,7 +335,7 @@ class Graph:
             
     
 
-    def display(self, node_colors=None):
+    def display(self, node_colors=None, edge_colors = None):
         """
         Displays graph with optional custom node colors
         :param self: Graph Object
@@ -355,8 +359,13 @@ class Graph:
                     else:
                         node_colors.append('#FEFEFE')
             
+
+            # if no custom edge colors provided, set all to black
+            if edge_colors is None:
+                edge_colors = ['#231F20'] * self.graph.number_of_edges()
+            
             nx.draw(self.graph, pos, with_labels=True, node_size=800, font_size=10, 
-                node_color=node_colors, edgecolors='#231F20', linewidths=2)
+                node_color=node_colors, edge_color= edge_colors, linewidths=2)
             
             edge_labels = nx.get_edge_attributes(self.graph, "weight")
             nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=edge_labels, 
@@ -387,12 +396,16 @@ class Graph:
                     else:
                         node_colors.append('#FEFEFE')
             
+            # if no custom edge colors provided, set all to black
+            if edge_colors is None:
+                edge_colors = ['#231F20'] * self.graph.number_of_edges()
+            
             nx.draw(self.graph, pos, with_labels=True, node_size=800, font_size=10, 
-                node_color=node_colors, edgecolors='#231F20', linewidths=2)
+                node_color=node_colors, edgecolors = '#231F20', edge_color=edge_colors, linewidths=2)
             edge_labels = nx.get_edge_attributes(self.graph, 'weight')
             nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=edge_labels, font_size=10)
         
-        return fig, node_colors
+        return fig, node_colors, edge_colors
 
 
 

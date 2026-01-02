@@ -21,15 +21,40 @@ if "fig" not in st.session_state:
 if "begin" not in st.session_state:
     st.session_state.begin = False
 
-##stores algorithm arrays in a tuple
-if "results" not in st.session_state:
-    st.session_state.results = ()
-
 if "node_colors" not in st.session_state:
     st.session_state.node_colors = []
 
 if "counter" not in st.session_state:
     st.session_state.counter = 0
+
+ 
+# alg results to be stored
+if "order" not in st.session_state:
+    st.session_state.order = []
+
+if "marked" not in st.session_state:
+    st.session_state.marked = []
+
+if "edge_to" not in st.session_state:
+    st.session_state.edge_to = []
+
+if "dist_to" not in st.session_state:
+    st.session_state.dist_to = []
+
+if "mst_edges" not in st.session_state:
+    st.session_state.mst_edges = []
+
+if "alg_select" not in st.session_state:
+    st.session_state.alg_select = ""
+
+if "edge_colors" not in st.session_state:
+    st.session_state.edge_colors = []
+
+if "edge_list" not in st.session_state:
+    st.session_state.edge_list = []
+
+if "is_directed" not in st.session_state:
+    st.session_state.is_directed = False
 
 ##creation options
 if st.session_state.graph is None:
@@ -65,6 +90,9 @@ if st.session_state.graph is None:
         
         if graph_type == "Undirected":
             input_id = c.GRAPH
+
+        if graph_type == "Directed":
+            st.session_state.is_directed = True
 
 
     
@@ -123,9 +151,11 @@ with st.sidebar.container(horizontal=False, vertical_alignment="distribute"):
         G = gu.Graph(input_id, input_weighted)
         G.create_nodes(input_node_count)
         G.assign_edges(input_edge_count, input_edge_lower, input_edge_upper, input_spans, input_sources)
-        st.session_state.fig, st.session_state.node_colors = G.display()
+        st.session_state.fig, st.session_state.node_colors, st.session_state.edge_colors = G.display()
         st.session_state.graph = G.graph
         st.session_state.graph_obj = G
+        st.session_state.edge_colors = ['#000000'] * st.session_state.graph.number_of_edges()
+        st.session_state.edge_list = list(G.graph.edges())
       
 
 
@@ -138,12 +168,14 @@ with st.sidebar.container(horizontal=False, vertical_alignment="distribute"):
 
         G.create_nodes(rand_nodes)
         G.assign_edges(random.randint(1, 100), rand_lower, rand_upper, random.choice([True, False]), random.randint(1, rand_nodes))
-        st.session_state.fig, st.session_state.node_colors = G.display()
+        st.session_state.fig, st.session_state.node_colors, st.session_state.edge_colors = G.display()
         st.session_state.graph = G.graph
         st.session_state.graph_obj = G
+        st.session_state.edge_list = list(G.graph.edges())
+        
 
 
-    ##resetting all known states
+        ##resetting all known states
     if st.button("Reset Graph"):
         print("user has reset")
         st.session_state.graph = None
@@ -152,6 +184,16 @@ with st.sidebar.container(horizontal=False, vertical_alignment="distribute"):
         st.session_state.begin = False
         st.session_state.results = ()
         st.session_state.node_colors = []
+        st.session_state.counter = 0
+        st.session_state.order = []
+        st.session_state.marked = []
+        st.session_state.edge_to = []
+        st.session_state.dist_to = []
+        st.session_state.mst_edges = []
+        st.session_state.alg_select = ""
+        st.session_state.edge_colors = []
+        st.session_state.edge_list = []
+        st.session_state.is_directed = False
         st.rerun()
     st.markdown("## Node Colorings:")
     st.markdown("- Orange: Nodes with 2+ incoming edges \n - Navy Blue: Nodes with exactly 1 incoming edge \n - White: Source nodes (0 incoming edges)")
@@ -173,54 +215,93 @@ if st.session_state.graph is not None:
         if st.button("Begin"):   
             print("Running " + alg_select)
             st.session_state.counter = 0
+            st.session_state.alg_select = alg_select  # Store algorithm selection
 
-            ##selecting algorithm
+            ##selecting algorithm and unpacking results
             if alg_select == "DFS":
-                st.session_state.results = engine.depth_first_search(source)
+                st.session_state.marked, st.session_state.edge_to, st.session_state.dist_to, st.session_state.order = engine.depth_first_search(source)
             elif alg_select == "BFS":
-                st.session_state.results = engine.breadth_first_search(source)
+                st.session_state.marked, st.session_state.edge_to, st.session_state.dist_to, st.session_state.order = engine.breadth_first_search(source)
             elif alg_select == "Dijkstra's":
-                st.session_state.results = engine.dijkstra(source)
+                st.session_state.edge_to, st.session_state.dist_to, st.session_state.order = engine.dijkstras(source)
             elif alg_select == "Prim's":
-                st.session_state.results = engine.prim(source)
+                st.session_state.mst_edges, st.session_state.order = engine.prims(source)
+            
+            
 
+            ##changes color at necessary node to be red (marks visited) nodes are 1 indexed, colors are 0 indexed
+            st.session_state.node_colors[source - 1] =  "#FF0000"
 
-
+            ## updates current figure and colors for session state
+            st.session_state.fig, st.session_state.node_colors, st.session_state.edge_colors = st.session_state.graph_obj.display(st.session_state.node_colors)
+            
+            ##increments step
+            st.session_state.counter += 1
 
             st.session_state.begin = True
             st.rerun()
     elif st.button("Next Step"):
         print("next step")
 
-        ## parsing results into variables
-        if alg_select in ["DFS", "BFS"]:
-            marked, edge_to, dist_to, order = st.session_state.results
-        elif alg_select == "Dijkstra's":
-            edge_to, dist_to, order = st.session_state.results
-        elif alg_select == "Prim's":
-            mst_edges, order = st.session_state.results
-
-
-        curr_step = st.session_state.counter
-        
-        ##take first node in order, update that color in the session state, go from there
-        curr_node = order[curr_step] 
-
-        ##changes color at necessary node to be red (marks visited)
-        st.session_state.node_colors[curr_node] =  "#FF0000"
-
-        ## updates current figure and colors for session state
-        st.session_state.fig, st.session_state.node_colors = st.session_state.graph_obj.display(st.session_state.node_colors)
-        
-        ##increments step
-        st.session_state.counter += 1
-
-        ##display arrays at each step (for walkthrough)
-
-
-        if st.session_state.counter >= len(order):
+                
+         # Check if algorithm is complete
+        if st.session_state.counter >= len(st.session_state.order):
             st.markdown("## Algorithm complete:")
-            ##TODO: add the current state data with st.session_state.results
+            st.markdown("### Arrays are index 0 = node 1")
+            
+            # Display final results based on algorithm type
+            if st.session_state.alg_select in ["DFS", "BFS"]:
+                st.write("**Marked:**", st.session_state.marked)
+                st.write("**Edge To:**", st.session_state.edge_to)
+                st.write("**Distance To:**", st.session_state.dist_to)
+            elif st.session_state.alg_select == "Dijkstra's":
+                st.write("**Edge To:**", st.session_state.edge_to)
+                st.write("**Distance To:**", st.session_state.dist_to)
+            elif st.session_state.alg_select == "Prim's":
+                st.write("**MST Edges (node, node, weight):**", st.session_state.mst_edges)
+            
+            st.write("**Visit Order:**", st.session_state.order)
+
+
+        else:    
+            curr_step = st.session_state.counter
+            
+            ##take first node in order, update that color in the session state, go from there
+            curr_node = st.session_state.order[curr_step] 
+
+            ##changes color at necessary node to be red (marks visited) nodes are 1 indexed, colors are 0 indexed
+            st.session_state.node_colors[curr_node - 1] =  "#FF0000"
+
+            if st.session_state.edge_to[curr_node - 1] != -1:
+                parent = st.session_state.edge_to[curr_node - 1]
+                edge_index = None
+                
+                for i, node_tup in enumerate(st.session_state.edge_list):
+                    u, v = node_tup
+                    
+                    # For directed graphs: parent → curr_node
+                    if st.session_state.graph.is_directed():
+                        if u == parent and v == curr_node:
+                            edge_index = i
+                            break
+                    else:
+                        # For undirected graphs: check both directions
+                        if (u == parent and v == curr_node) or (u == curr_node and v == parent):
+                            edge_index = i
+                            break
+                
+                if edge_index is not None:
+                    st.session_state.edge_colors[edge_index] = "#FF0000"
+
+
+
+            ## updates current figure and colors for session state
+            st.session_state.fig, st.session_state.node_colors, st.session_state.edge_colors = st.session_state.graph_obj.display(st.session_state.node_colors, st.session_state.edge_colors)
+            
+            ##increments step
+            st.session_state.counter += 1
+
+
 
 
 

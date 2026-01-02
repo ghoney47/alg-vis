@@ -23,9 +23,4 @@ Navy Blue: Nodes with exactly 1 incoming edge
 White: Source nodes (0 incoming edges)
 
 
-#### Gen AI Disclosure
-Part of this project was to also learn how to best use Gen AI to learn python from scratch, and help outline the project. I used Gen AI to learn about ways to structure, attack, and approach medium sized projects on my own. 
-- The file outline of the project was generated using ChatGPT (I made changes from the original generation)
-- The step by step node recoloring was completed with help from claude 
-
 
